@@ -1,0 +1,14 @@
+const express = require("express");
+const auth = require("../middleware/auth");
+const asyncHandler = require("../utils/asyncHandler");
+const courses = require("../controllers/courseController");
+const bookings = require("../controllers/bookingController");
+const router = express.Router();
+router.use(auth("admin"));
+router.get("/courses", asyncHandler(courses.adminList));
+router.post("/courses", asyncHandler(courses.create));
+router.patch("/courses/:id", asyncHandler(courses.update));
+router.delete("/courses/:id", asyncHandler(courses.remove));
+router.get("/bookings", asyncHandler(bookings.adminList));
+router.patch("/bookings/:id", asyncHandler(bookings.review));
+module.exports = router;
