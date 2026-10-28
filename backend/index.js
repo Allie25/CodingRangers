@@ -15,6 +15,22 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./docs/swaggerSpec");
 
 const app = express();
+// Vercel sits in front of the function and forwards the client IP in X-Forwarded-For.
+app.set("trust proxy", 1);
+let servicesPromise;
+
+function initializeServices() {
+  if (!servicesPromise) {
+    servicesPromise = connectDB()
+      .then(seedAdmin)
+      .catch((error) => {
+        servicesPromise = undefined;
+        throw error;
+      });
+  }
+  return servicesPromise;
+}
+
 app.use(helmet());
 app.use(
   cors({
@@ -45,6 +61,16 @@ app.use(
   swaggerUi.setup(swaggerSpec),
 );
 app.get("/api-docs.json", (_req, res) => res.json(swaggerSpec));
+app.use(async (req, res, next) => {
+  if (req.path === "/api/health" || req.path.startsWith("/api-docs"))
+    return next();
+  try {
+    await initializeServices();
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 app.use("/api/auth", authRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/bookings", bookingRoutes);
@@ -52,8 +78,7 @@ app.use("/api/admin", adminRoutes);
 app.use(errorHandler);
 
 async function start() {
-  await connectDB();
-  await seedAdmin();
+  await initializeServices();
   const port = Number(process.env.PORT || 3000);
   app.listen(port, () =>
     console.log(`Coding Rangers API listening on ${port}`),
@@ -66,4 +91,5 @@ if (require.main === module)
     process.exit(1);
   });
 
-module.exports = { app, start };
+module.exports = app;
+module.exports.start = start;

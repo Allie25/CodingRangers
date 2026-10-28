@@ -10,7 +10,9 @@ function getTransporter() {
       service: "gmail",
       auth: {
         user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD,
+        // Google displays app passwords in groups separated by spaces. Accept
+        // that copied format as well as the continuous 16-character form.
+        pass: process.env.GMAIL_APP_PASSWORD.replace(/\s+/g, ""),
       },
     });
   }
