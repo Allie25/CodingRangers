@@ -42,7 +42,7 @@ app.use(
 );
 app.use(express.json({ limit: "20kb" }));
 app.use(
-  "/api/auth",
+  "/auth",
   rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 10,
@@ -50,7 +50,7 @@ app.use(
     legacyHeaders: false,
   }),
 );
-app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
+app.get("/health", (_req, res) => res.json({ status: "ok" }));
 app.use(
   "/api-docs",
   (req, res, next) => {
@@ -71,10 +71,10 @@ app.use(async (req, res, next) => {
     next(error);
   }
 });
-app.use("/api/auth", authRoutes);
-app.use("/api/courses", courseRoutes);
-app.use("/api/bookings", bookingRoutes);
-app.use("/api/admin", adminRoutes);
+app.use("/auth", authRoutes);
+app.use("/courses", courseRoutes);
+app.use("/bookings", bookingRoutes);
+app.use("/admin", adminRoutes);
 app.use(errorHandler);
 
 async function start() {
